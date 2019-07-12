@@ -3,6 +3,7 @@ package graphite
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -66,6 +67,7 @@ func (c *Client) createError(r qsGenerator, t string) error {
 }
 
 func (c *Client) queryAsString(r qsGenerator) string {
+	fmt.Printf("URL: %s", c.Url.String() + r.toQueryString())
 	return c.Url.String() + r.toQueryString()
 }
 
