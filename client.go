@@ -3,6 +3,7 @@ package graphite
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -33,11 +34,11 @@ type Client struct {
 // For example 'https://my-graphite.tld'. NewFromString could return either `graphite.Client`
 // instance or `WrongUrlError` error.
 func NewFromString(urlString string) (*Client, error) {
-	url, err := url.Parse(urlString)
+	u, err := url.Parse(urlString)
 	if err != nil {
 		return nil, WrongUrlError
 	}
-	return &Client{*url, &http.Client{}}, nil
+	return &Client{*u, &http.Client{}}, nil
 }
 
 func (c *Client) makeRequest(q qsGenerator) ([]byte, error) {
@@ -47,11 +48,11 @@ func (c *Client) makeRequest(q qsGenerator) ([]byte, error) {
 		return empty, c.createError(q, "Request error")
 	}
 	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
 	if response.StatusCode != http.StatusOK {
-		return empty, c.createError(q, "Wrong status code")
+		return empty, c.createError(q, fmt.Sprintf("Wrong status code: %v, ResponseBody: %s", response.StatusCode, string(body)))
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return empty, c.createError(q, "Can't read response body")
 	}
